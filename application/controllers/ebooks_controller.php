@@ -22,6 +22,12 @@ class Ebooks_Controller extends CI_Controller {
 	{
 		$this->load->model('ebooks_model');
 		$data['ebooks'] = $this->ebooks_model->getEbooks();
+
+		//random token
+		$token = bin2hex(random_bytes(16));
+		$this->session->set_userdata('token', $token);
+
+		$data['token'] = $token;
 		$this->load->view('ebooks_list', $data);
 	}
 
@@ -31,5 +37,4 @@ class Ebooks_Controller extends CI_Controller {
 		$this->ebooks_model->deleteEbook($id);
 		redirect('ebooks_controller');
 	}
-
 }
