@@ -50,13 +50,36 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 				<td><?php echo $ebook->ebook_name; ?></td>
 				<td><?php echo $ebook->pathfile; ?></td>
 				<td>
-				<button class="btn btn-primary" onclick="openPdfModal('<?php echo base_url('files_controller/download/'.strtr(base64_encode($ebook->pathfile), '+/=', '-_.').'?token='.$token);?>')">View PDF</button>
+					<button class="btn btn-primary" onclick="openAlert('<?php echo base_url('files_controller/download/'.strtr(base64_encode($ebook->pathfile), '+/=', '-_.').'?token='.$token);?>')">View PDF</button>
 					<button href="<?php echo base_url('ebooks_controller/delete_ebook/'.$ebook->id); ?>">Delete</button>
 				</td>
 			</tr>
 			<?php endforeach; ?>
 		</table>
 	</div>
+
+	<!-- Modal -->
+    <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="alertModalLabel">Peringatan</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- PDF content will be loaded here -->
+					<div>Tidak diperkenankan membuka tab lain saat membuka PDF. Jika terjadi, maka PDF akan direset dan user harus membuka PDF dari awal.</div>
+                </div>
+                <div class="modal-footer">
+                    <!-- Navigation buttons -->
+                    <button type="button" class="btn btn-primary" onclick="openPdfModal()">Yes</button>
+					<button type="button" class="btn btn-primary" onclick="">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
   <!-- Modal -->
     <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel" aria-hidden="true">
@@ -94,9 +117,16 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         var currentPage = 1;
         var totalPages = 0;
 		var pdfFile = null;
+		var pdfUrl = null;
 
-        function openPdfModal(pdfUrl) {
+		function openAlert(url){
+			$('#alertModal').modal('show');
+			pdfUrl = url;
+		}
+
+        function openPdfModal() {
             // Reset current page to 1 when opening the modal
+			$('#alertModal').modal('hide');
             currentPage = 1;
             $('#pdfModal').modal('show');
             loadPdf(pdfUrl);
@@ -157,6 +187,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     </script>
 
 <script>
+	var isModalOpen = false;
     // Fungsi untuk menangani peristiwa klik kanan
     function disableRightClick(event) {
         event.preventDefault(); // Mencegah tindakan default (misalnya, menampilkan menu konteks)
@@ -176,6 +207,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         document.addEventListener('contextmenu', disableRightClick);
         // Menangkap peristiwa ketika tombol keyboard ditekan pada dokumen
         document.addEventListener('keydown', disablePrint);
+		isModalOpen = true;
     });
 
     // Ketika modal disembunyikan
@@ -186,9 +218,20 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         document.removeEventListener('keydown', disablePrint);
 		//refresh page saat modal ditutup
 		location.reload();
+		isModalOpen = false;
     });
 </script>
 
+<script>
+	// Ketika jendela kehilangan fokus (user pindah ke tab lain)
+	window.addEventListener('blur', function() {
+		if (isModalOpen) {
+			alert('Karena tidak bisa mencegah user untuk pindah tab, maka saat user kembali ke tab akan ada peringatan dan diberi dihandle seperti "tes tiba - tiba dianggap selesai" atau yang lain.');	
+			//location.reload();
+		}
+	});
+
+</script>
 </div>
 
 </body>
